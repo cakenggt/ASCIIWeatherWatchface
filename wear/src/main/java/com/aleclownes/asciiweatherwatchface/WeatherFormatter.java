@@ -69,7 +69,8 @@ public abstract class WeatherFormatter {
                 currently.optDouble("precipProbability"),
                 lines, 0);
         List<String> statuses = new ArrayList<>();
-        List<Double> temps = new ArrayList<>();
+        List<Double> highTemps = new ArrayList<>();
+        List<Double> lowTemps = new ArrayList<>();
         List<Double> precips = new ArrayList<>();
         for (int i = 1; i < 5; i++){
             JSONObject day = days.optJSONObject(i);
@@ -77,10 +78,11 @@ public abstract class WeatherFormatter {
                 return lines;
             }
             statuses.add(day.optString("icon"));
-            temps.add(day.optDouble("temperatureMax", 0));
+            highTemps.add(day.optDouble("temperatureMax", 0));
+            lowTemps.add(day.optDouble("temperatureMin", 0));
             precips.add(day.optDouble("precipProbability", 0));
         }
-        formatForecast(statuses, temps, precips, lines, 6);
+        formatForecast(statuses, highTemps, lowTemps, precips, lines, 6);
         return lines;
     }
 
@@ -303,7 +305,8 @@ public abstract class WeatherFormatter {
     }
 
     private static void formatForecast(List<String> statuses,
-                                       List<Double> temps,
+                                       List<Double> highTemps,
+                                       List<Double> lowTemps,
                                        List<Double> precips,
                                        List<List<ColorText>> lines,
                                        int start){
@@ -314,19 +317,27 @@ public abstract class WeatherFormatter {
                 code = "UN";
             }
             lines.get(start+0).add(new ColorText(Color.WHITE, " "+code+"   "));
-            List<ColorText> temp = formatTemperature(temps.get(i));
-            temp.add(0, new ColorText(Color.WHITE, " "));
-            int tempLength = getLengthOfColorTextList(temp);
-            if (tempLength < totalWidth){
-                temp.add(new ColorText(Color.WHITE,
-                        String.format("%1$"+(totalWidth-tempLength)+"s", "")));
+            List<ColorText> highTemp = formatTemperature(highTemps.get(i));
+            highTemp.add(0, new ColorText(Color.WHITE, " "));
+            int highTempLength = getLengthOfColorTextList(highTemp);
+            if (highTempLength < totalWidth){
+                highTemp.add(new ColorText(Color.WHITE,
+                        String.format("%1$"+(totalWidth-highTempLength)+"s", "")));
             }
-            lines.get(start+1).addAll(temp);
+            lines.get(start+1).addAll(highTemp);
+            List<ColorText> lowTemp = formatTemperature(lowTemps.get(i));
+            lowTemp.add(0, new ColorText(Color.WHITE, " "));
+            int lowTempLength = getLengthOfColorTextList(highTemp);
+            if (lowTempLength < totalWidth){
+                lowTemp.add(new ColorText(Color.WHITE,
+                        String.format("%1$"+(totalWidth-lowTempLength)+"s", "")));
+            }
+            lines.get(start+2).addAll(lowTemp);
             String precip = " "+(int)(precips.get(i)*100)+"%";
             precip = String.format("%1$-6s", precip);
-            lines.get(start+2).add(new ColorText(Color.WHITE, precip));
-
+            lines.get(start+3).add(new ColorText(Color.WHITE, precip));
         }
+        lines.get(start+4).add(getSeparator());
     }
 
     private static int getLengthOfColorTextList(List<ColorText> colorTextList){
