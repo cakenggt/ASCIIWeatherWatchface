@@ -2,6 +2,8 @@
 
 This watchface shows the weather in an ASCII console-like display.
 
+![Screenshot](wear/src/main/res/drawable-nodpi/preview_digital.png)
+
 The weather data is gotten from [forecast.io](forecast.io) and uses your current location
 to get the data.
 
