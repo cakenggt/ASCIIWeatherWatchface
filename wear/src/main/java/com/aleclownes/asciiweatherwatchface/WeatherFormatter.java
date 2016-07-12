@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Created by alownes on 7/7/2016.
@@ -277,8 +278,10 @@ public abstract class WeatherFormatter {
     }
 
     private static List<ColorText> formatSunset(long time){
-        Date date = new Date(time);
-        String text = DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
+        Date d = new Date(time*1000);
+        DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT);
+        df.setTimeZone(TimeZone.getDefault());
+        String text = df.format(d);
         List<ColorText> line = new ArrayList<>();
         line.add(new ColorText(Color.RED, "Set: "));
         line.add(new ColorText(Color.WHITE, text));
