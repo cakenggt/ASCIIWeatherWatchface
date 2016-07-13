@@ -263,8 +263,9 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
             super.onCreate(holder);
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(ASCIIWeatherWatchface.this)
-                    .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
+                    .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
+                    .setAmbientPeekMode(WatchFaceStyle.AMBIENT_PEEK_MODE_HIDDEN)
                     .setShowSystemUiTime(false)
                     .build());
             Resources resources = ASCIIWeatherWatchface.this.getResources();

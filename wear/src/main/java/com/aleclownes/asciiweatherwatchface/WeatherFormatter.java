@@ -67,7 +67,7 @@ public abstract class WeatherFormatter {
                 currently.optDouble("windSpeed"), currently.optDouble("windBearing", 0),
                 today.optLong("sunsetTime"),
                 today.optDouble("precipAccumulation", 0),
-                currently.optDouble("precipProbability"),
+                today.optDouble("precipProbability", 0),
                 lines, 0);
         List<String> statuses = new ArrayList<>();
         List<Double> highTemps = new ArrayList<>();
@@ -104,11 +104,11 @@ public abstract class WeatherFormatter {
         switch(condition){
             case "clear-day"://intended fallthrough
             case "clear-night":
-                lines.get(start+0).add(new ColorText(Color.YELLOW, "    \\   /   "));
+                lines.get(start+0).add(new ColorText(Color.YELLOW, "    \\   /    "));
                 lines.get(start+1).add(new ColorText(Color.YELLOW, "     .-.     "));
                 lines.get(start+2).add(new ColorText(Color.YELLOW, "  ‒ (   ) ‒  "));
                 lines.get(start+3).add(new ColorText(Color.YELLOW, "     `-᾿     "));
-                lines.get(start+4).add(new ColorText(Color.YELLOW, "    /   \\   "));
+                lines.get(start+4).add(new ColorText(Color.YELLOW, "    /   \\    "));
                 break;
             case "rain":
                 lines.get(start+0).add(new ColorText(Color.GRAY, "     .-.     "));
