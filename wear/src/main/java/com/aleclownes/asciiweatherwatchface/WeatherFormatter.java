@@ -101,14 +101,23 @@ public abstract class WeatherFormatter {
 
     private static void createWeatherIcon(String condition, List<List<ColorText>> lines,
                                           int start){
+        int olive = Color.parseColor("olive");
         switch(condition){
-            case "clear-day"://intended fallthrough
-            case "clear-night":
+            case "clear-day":
                 lines.get(start+0).add(new ColorText(Color.YELLOW, "    \\   /    "));
                 lines.get(start+1).add(new ColorText(Color.YELLOW, "     .-.     "));
                 lines.get(start+2).add(new ColorText(Color.YELLOW, "  ‒ (   ) ‒  "));
                 lines.get(start+3).add(new ColorText(Color.YELLOW, "     `-᾿     "));
                 lines.get(start+4).add(new ColorText(Color.YELLOW, "    /   \\    "));
+                break;
+            case "clear-night":
+                lines.get(start+0).add(new ColorText(Color.YELLOW, "     *    *  "));
+                lines.get(start+1).add(new ColorText(Color.YELLOW, "  *  "));
+                lines.get(start+1).add(new ColorText(Color.WHITE, ".-.     "));
+                lines.get(start+2).add(new ColorText(Color.WHITE, "    ( (  "));
+                lines.get(start+2).add(new ColorText(Color.YELLOW, "*   "));
+                lines.get(start+3).add(new ColorText(Color.WHITE, "     `-`     "));
+                lines.get(start+4).add(new ColorText(Color.YELLOW, "   *      *  "));
                 break;
             case "rain":
                 lines.get(start+0).add(new ColorText(Color.GRAY, "     .-.     "));
@@ -118,16 +127,16 @@ public abstract class WeatherFormatter {
                 lines.get(start+4).add(new ColorText(Color.BLUE, "   ʻ ʻ ʻ ʻ   "));
                 break;
             case "snow":
-                lines.get(start+0).add(new ColorText(Color.GRAY, "     .-.     "));
-                lines.get(start+1).add(new ColorText(Color.GRAY, "    (   ).   "));
-                lines.get(start+2).add(new ColorText(Color.GRAY, "   (___(__)  "));
+                lines.get(start+0).add(new ColorText(Color.LTGRAY, "     .-.     "));
+                lines.get(start+1).add(new ColorText(Color.LTGRAY, "    (   ).   "));
+                lines.get(start+2).add(new ColorText(Color.LTGRAY, "   (___(__)  "));
                 lines.get(start+3).add(new ColorText(Color.WHITE, "    *  *  *  "));
                 lines.get(start+4).add(new ColorText(Color.WHITE, "   *  *  *   "));
                 break;
             case "sleet":
-                lines.get(start+0).add(new ColorText(Color.GRAY, "     .-.     "));
-                lines.get(start+1).add(new ColorText(Color.GRAY, "    (   ).   "));
-                lines.get(start+2).add(new ColorText(Color.GRAY, "   (___(__)  "));
+                lines.get(start+0).add(new ColorText(Color.LTGRAY, "     .-.     "));
+                lines.get(start+1).add(new ColorText(Color.LTGRAY, "    (   ).   "));
+                lines.get(start+2).add(new ColorText(Color.LTGRAY, "   (___(__)  "));
                 lines.get(start+3).add(new ColorText(Color.BLUE, "    ʻ "));
                 lines.get(start+3).add(new ColorText(Color.WHITE, "*"));
                 lines.get(start+3).add(new ColorText(Color.BLUE, " ʻ "));
@@ -145,23 +154,45 @@ public abstract class WeatherFormatter {
                 lines.get(start+4).add(new ColorText(Color.LTGRAY, "             "));
                 break;
             case "cloudy":
-                lines.get(start+0).add(new ColorText(Color.GRAY, "             "));
-                lines.get(start+1).add(new ColorText(Color.GRAY, "     .--.    "));
-                lines.get(start+2).add(new ColorText(Color.GRAY, "  .-(    ).  "));
-                lines.get(start+3).add(new ColorText(Color.GRAY, " (___.__)__) "));
-                lines.get(start+4).add(new ColorText(Color.GRAY, "             "));
+                lines.get(start+0).add(new ColorText(Color.LTGRAY, "             "));
+                lines.get(start+1).add(new ColorText(Color.LTGRAY, "     .--.    "));
+                lines.get(start+2).add(new ColorText(Color.LTGRAY, "  .-(    ).  "));
+                lines.get(start+3).add(new ColorText(Color.LTGRAY, " (___.__)__) "));
+                lines.get(start+4).add(new ColorText(Color.LTGRAY, "             "));
                 break;
-            case "wind"://intended fallthrough
-            case "partly-cloudy-day"://intended fallthrough
-            case "partly-cloudy-night":
+            case "wind":
+                lines.get(start+0).add(new ColorText(Color.WHITE, "     ~    ~  "));
+                lines.get(start+1).add(new ColorText(Color.WHITE, "  ~   ~"));
+                lines.get(start+1).add(new ColorText(Color.GREEN, ". . "));
+                lines.get(start+1).add(new ColorText(Color.WHITE, "~ "));
+                lines.get(start+2).add(new ColorText(Color.WHITE, "    ~ "));
+                lines.get(start+2).add(new ColorText(Color.GREEN, "( ) )  "));
+                lines.get(start+3).add(new ColorText(Color.WHITE, " ~  "));
+                lines.get(start+3).add(new ColorText(olive, ".-'"));
+                lines.get(start+3).add(new ColorText(Color.GREEN, "(__)  "));
+                lines.get(start+4).add(new ColorText(olive, "   //        "));
+                break;
+            case "partly-cloudy-day":
                 lines.get(start+0).add(new ColorText(Color.YELLOW, "   \\  /      "));
                 lines.get(start+1).add(new ColorText(Color.YELLOW, " _ /\"\""));
-                lines.get(start+1).add(new ColorText(Color.GRAY, ".-.    "));
+                lines.get(start+1).add(new ColorText(Color.LTGRAY, ".-.    "));
                 lines.get(start+2).add(new ColorText(Color.YELLOW, "   \\_"));
-                lines.get(start+2).add(new ColorText(Color.GRAY, "(   ).  "));
+                lines.get(start+2).add(new ColorText(Color.LTGRAY, "(   ).  "));
                 lines.get(start+3).add(new ColorText(Color.YELLOW, "   /"));
-                lines.get(start+3).add(new ColorText(Color.GRAY, "(___(__) "));
-                lines.get(start+4).add(new ColorText(Color.GRAY, "             "));
+                lines.get(start+3).add(new ColorText(Color.LTGRAY, "(___(__) "));
+                lines.get(start+4).add(new ColorText(Color.LTGRAY, "             "));
+                break;
+            case "partly-cloudy-night":
+                lines.get(start+0).add(new ColorText(Color.WHITE, "  .-. "));
+                lines.get(start+0).add(new ColorText(Color.YELLOW, "*      "));
+                lines.get(start+1).add(new ColorText(Color.WHITE, " ( (  "));
+                lines.get(start+1).add(new ColorText(Color.LTGRAY, ".-. "));
+                lines.get(start+1).add(new ColorText(Color.YELLOW, "*  "));
+                lines.get(start+2).add(new ColorText(Color.WHITE, "  `-`"));
+                lines.get(start+2).add(new ColorText(Color.LTGRAY, "(   ).  "));
+                lines.get(start+3).add(new ColorText(Color.YELLOW, "  * "));
+                lines.get(start+3).add(new ColorText(Color.LTGRAY, "(___(__) "));
+                lines.get(start+4).add(new ColorText(Color.WHITE, "             "));
                 break;
             case "thunderstorm":
                 lines.get(start+0).add(new ColorText(Color.YELLOW, " _`/\"\""));
@@ -176,8 +207,22 @@ public abstract class WeatherFormatter {
                 lines.get(start+3).add(new ColorText(Color.BLUE, "ʻ ʻ "));
                 lines.get(start+4).add(new ColorText(Color.BLUE, "    ʻ ʻ ʻ ʻ  "));
                 break;
-            case "hail"://intended fallthrough
-            case "tornado"://intended fallthrough
+            case "hail":
+                lines.get(start+0).add(new ColorText(Color.YELLOW, " _`/\"\""));
+                lines.get(start+0).add(new ColorText(Color.DKGRAY, ".-.    "));
+                lines.get(start+1).add(new ColorText(Color.YELLOW, "  ,\\_"));
+                lines.get(start+1).add(new ColorText(Color.DKGRAY, "(   ).  "));
+                lines.get(start+2).add(new ColorText(Color.YELLOW, "   /"));
+                lines.get(start+2).add(new ColorText(Color.DKGRAY, "(___(__) "));
+                lines.get(start+3).add(new ColorText(Color.WHITE, "    o o o o  "));
+                lines.get(start+4).add(new ColorText(Color.WHITE, "   o o o o   "));
+                break;
+            case "tornado":
+                lines.get(start+0).add(new ColorText(Color.DKGRAY, " (___.__)__) "));
+                lines.get(start+1).add(new ColorText(Color.GRAY, "   ~~~~~~    "));
+                lines.get(start+2).add(new ColorText(Color.GRAY, "    ~~~~~    "));
+                lines.get(start+3).add(new ColorText(Color.GRAY, "   ~~~~      "));
+                lines.get(start+4).add(new ColorText(Color.GRAY, "    ~        "));
             default:
                 lines.get(start+0).add(new ColorText(Color.WHITE, "    .-.      "));
                 lines.get(start+1).add(new ColorText(Color.WHITE, "     __)     "));
