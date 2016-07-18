@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.wearable.watchface.CanvasWatchFaceService;
+import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -89,6 +90,8 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
     private static final int MSG_UPDATE_TIME = 0;
 
     JSONObject weatherData;
+
+    WeatherFormatter.DisplayType displayType = WeatherFormatter.DisplayType.CURRENT;
 
     GoogleApiClient mGoogleApiClient;
 
@@ -267,6 +270,7 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
                     .setAmbientPeekMode(WatchFaceStyle.AMBIENT_PEEK_MODE_HIDDEN)
                     .setShowSystemUiTime(false)
+                    .setAcceptsTapEvents(true)
                     .build());
             Resources resources = ASCIIWeatherWatchface.this.getResources();
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
@@ -373,27 +377,61 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
         }
 
         @Override
+        public void onTapCommand(@TapType int tapType, int x, int y, long eventTime){
+            switch (tapType){
+                case WatchFaceService.TAP_TYPE_TAP:
+                    if (displayType.equals(WeatherFormatter.DisplayType.CURRENT)){
+                        displayType = WeatherFormatter.DisplayType.DETAIL;
+                    }
+                    else {
+                        displayType = WeatherFormatter.DisplayType.CURRENT;
+                    }
+                    break;
+                default:
+                    super.onTapCommand(tapType, x, y, eventTime);
+            }
+        }
+
+        @Override
         public void onDraw(Canvas canvas, Rect bounds) {
-            //Find out if new json needs to be requested
-            if (weatherData != null){
-                JSONObject currently = weatherData.optJSONObject("currently");
-                if (currently != null) {
-                    long time = currently.optLong("time");
-                    if (time == 0) {
-                        Toast.makeText(ASCIIWeatherWatchface.this, "Time was 0", Toast.LENGTH_SHORT);
-                    } else {
-                        long now = new Date().getTime();
-                        if (now - time > REQUEST_PERIOD) {
-                            boolean success = requestWeatherData();
-                            try {
-                                if (success) {
-                                    //If the request was able to be made
-                                    //set the time to current time
-                                    currently.put("time", now);
-                                    weatherData.put("currently", currently);
+            if (com.aleclownes.asciiweatherwatchface.BuildConfig.DEBUG){
+                if (weatherData == null){
+                    weatherData = StubData.getStubData();
+                }
+                else{
+                    JSONObject currently = weatherData.optJSONObject("currently");
+                    long time = System.currentTimeMillis();
+                    List<String> icons = new ArrayList<>(WeatherFormatter.iconCodes.keySet());
+                    int index = (int)((time/1000)%icons.size());
+                    try {
+                        currently.put("icon", icons.get(index));
+                        currently.put("summary", icons.get(index));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            else{
+                //Find out if new json needs to be requested
+                if (weatherData != null){
+                    JSONObject currently = weatherData.optJSONObject("currently");
+                    if (currently != null) {
+                        long time = currently.optLong("time");
+                        if (time == 0) {
+                            Toast.makeText(ASCIIWeatherWatchface.this, "Time was 0", Toast.LENGTH_SHORT);
+                        } else {
+                            long now = new Date().getTime();
+                            if (now - time > REQUEST_PERIOD) {
+                                boolean success = requestWeatherData();
+                                try {
+                                    if (success) {
+                                        //If the request was able to be made
+                                        //set the time to current time
+                                        currently.put("time", now);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
                             }
                         }
                     }
@@ -430,7 +468,7 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
             }
 
             float subYOffset = mYOffset;
-            List<List<ColorText>> lines = WeatherFormatter.createDisplay(weatherData);
+            List<List<ColorText>> lines = WeatherFormatter.createDisplay(weatherData, displayType);
             for (List<ColorText> line : lines){
                 float subXOffset = mXOffset;
                 for (ColorText colorText : line){

@@ -41,7 +41,8 @@ public abstract class WeatherFormatter {
         iconCodes.put("tornado", "TO");
     }
 
-    public static List<List<ColorText>> createDisplay(JSONObject json) {
+    public static List<List<ColorText>> createDisplay(JSONObject json, DisplayType displayType) {
+        //This is for error returning a blank screen
         List<List<ColorText>> lines = createLines(11);
         if (json == null){
             return lines;
@@ -58,10 +59,31 @@ public abstract class WeatherFormatter {
         if (days == null){
             return lines;
         }
+        JSONObject hourly = json.optJSONObject("hourly");
+        if (hourly == null){
+            return lines;
+        }
+        JSONArray hours = hourly.optJSONArray("data");
+        if (hours == null){
+            return lines;
+        }
         JSONObject today = days.optJSONObject(0);
         if (today == null){
             return lines;
         }
+        switch(displayType){
+            case CURRENT:
+                return createCurrent(currently, today, days);
+            case DETAIL:
+                return createDetail(hours);
+        }
+        return lines;
+    }
+
+    private static List<List<ColorText>> createCurrent(JSONObject currently,
+                                      JSONObject today,
+                                      JSONArray days){
+        List<List<ColorText>> lines = createLines(11);
         createWeatherIcon(currently.optString("icon"), lines, 0);
         createCurrentConditions(currently.optString("summary"), currently.optDouble("temperature"),
                 currently.optDouble("windSpeed"), currently.optDouble("windBearing", 0),
@@ -85,6 +107,68 @@ public abstract class WeatherFormatter {
         }
         formatForecast(statuses, highTemps, lowTemps, precips, lines, 6);
         return lines;
+    }
+
+    private static List<List<ColorText>> createDetail(JSONArray hours){
+        List<List<ColorText>> lines = createLines(13);
+        JSONObject firstHour = hours.optJSONObject(0);
+        double[] rainData = new double[TOTAL_WIDTH];
+        double rainCeil = 0;
+        double rainFloor = 0;
+        double[] tempData = new double[TOTAL_WIDTH];
+        double tempCeil = 0;
+        double tempFloor = 0;
+        if (firstHour != null){
+            rainCeil = firstHour.optDouble("precipProbability", 0);
+            rainFloor = firstHour.optDouble("precipProbability", 0);
+            tempCeil = firstHour.optDouble("temperature", 0);
+            tempFloor = firstHour.optDouble("temperature", 0);
+        }
+        for (int i = 0; i < TOTAL_WIDTH; i++){
+            JSONObject hour = hours.optJSONObject(i);
+            if (hour == null){
+                continue;
+            }
+            double temp = hour.optDouble("temperature", 0);
+            double precip = hour.optDouble("precipProbability", 0)*100;
+            if (temp > tempCeil){
+                tempCeil = temp;
+            }
+            if (temp < tempFloor){
+                tempFloor = temp;
+            }
+            tempData[i] = temp;
+            if (precip > rainCeil){
+                rainCeil = precip;
+            }
+            if (precip < rainFloor){
+                rainFloor = precip;
+            }
+            rainData[i] = precip;
+        }
+        lines.get(0).add(new ColorText(Color.BLUE, (int)rainCeil+"% Rain"));
+        createLineGraph(rainData, Color.BLUE, rainCeil, rainFloor, lines, 1);
+        lines.get(5).add(new ColorText(Color.BLUE, (int)rainFloor+"%"));
+        lines.get(6).add(getSeparator());
+        lines.get(7).add(new ColorText(Color.YELLOW, (int)tempCeil+"°F Temperature"));
+        createLineGraph(tempData, Color.YELLOW, tempCeil, tempFloor, lines, 8);
+        lines.get(12).add(new ColorText(Color.YELLOW, (int)tempFloor+"°F"));
+        return lines;
+    }
+
+    private static void createLineGraph(double[] data, int color, double ceil, double floor,
+                                        List<List<ColorText>> lines, int start){
+        for (int i = 0; i < data.length; i++){
+            double point = data[i];
+            int rowNum = start+(3-(int)(((point-floor)/(ceil-floor))*3));
+            List<ColorText> row = lines.get(rowNum);
+            int currentRowLength = getLengthOfColorTextList(row);
+            if (currentRowLength < i){
+                row.add(new ColorText(Color.WHITE,
+                        String.format("%1$"+(i-currentRowLength)+"s", "")));
+            }
+            row.add(new ColorText(color, "."));
+        }
     }
 
     /**
@@ -123,8 +207,8 @@ public abstract class WeatherFormatter {
                 lines.get(start+0).add(new ColorText(Color.GRAY, "     .-.     "));
                 lines.get(start+1).add(new ColorText(Color.GRAY, "    (   ).   "));
                 lines.get(start+2).add(new ColorText(Color.GRAY, "   (___(__)  "));
-                lines.get(start+3).add(new ColorText(Color.BLUE, "    ʻ ʻ ʻ ʻ  "));
-                lines.get(start+4).add(new ColorText(Color.BLUE, "   ʻ ʻ ʻ ʻ   "));
+                lines.get(start+3).add(new ColorText(Color.BLUE, "    ' ' ' '  "));
+                lines.get(start+4).add(new ColorText(Color.BLUE, "   ' ' ' '   "));
                 break;
             case "snow":
                 lines.get(start+0).add(new ColorText(Color.LTGRAY, "     .-.     "));
@@ -137,14 +221,14 @@ public abstract class WeatherFormatter {
                 lines.get(start+0).add(new ColorText(Color.LTGRAY, "     .-.     "));
                 lines.get(start+1).add(new ColorText(Color.LTGRAY, "    (   ).   "));
                 lines.get(start+2).add(new ColorText(Color.LTGRAY, "   (___(__)  "));
-                lines.get(start+3).add(new ColorText(Color.BLUE, "    ʻ "));
+                lines.get(start+3).add(new ColorText(Color.BLUE, "    ' "));
                 lines.get(start+3).add(new ColorText(Color.WHITE, "*"));
-                lines.get(start+3).add(new ColorText(Color.BLUE, " ʻ "));
+                lines.get(start+3).add(new ColorText(Color.BLUE, " ' "));
                 lines.get(start+3).add(new ColorText(Color.WHITE, "*  "));
                 lines.get(start+4).add(new ColorText(Color.WHITE, "   *"));
-                lines.get(start+4).add(new ColorText(Color.BLUE, " ʻ "));
+                lines.get(start+4).add(new ColorText(Color.BLUE, " ' "));
                 lines.get(start+4).add(new ColorText(Color.WHITE, "*"));
-                lines.get(start+4).add(new ColorText(Color.BLUE, " ʻ   "));
+                lines.get(start+4).add(new ColorText(Color.BLUE, " '   "));
                 break;
             case "fog":
                 lines.get(start+0).add(new ColorText(Color.LTGRAY, "             "));
@@ -201,11 +285,14 @@ public abstract class WeatherFormatter {
                 lines.get(start+1).add(new ColorText(Color.DKGRAY, "(   ).  "));
                 lines.get(start+2).add(new ColorText(Color.YELLOW, "   /"));
                 lines.get(start+2).add(new ColorText(Color.DKGRAY, "(___(__) "));
-                lines.get(start+3).add(new ColorText(Color.YELLOW, "    ⚡"));
-                lines.get(start+3).add(new ColorText(Color.BLUE, "ʻ ʻ"));
-                lines.get(start+3).add(new ColorText(Color.YELLOW, "⚡"));
-                lines.get(start+3).add(new ColorText(Color.BLUE, "ʻ ʻ "));
-                lines.get(start+4).add(new ColorText(Color.BLUE, "    ʻ ʻ ʻ ʻ  "));
+                lines.get(start+3).add(new ColorText(Color.YELLOW, "    /"));
+                lines.get(start+3).add(new ColorText(Color.BLUE, "' '"));
+                lines.get(start+3).add(new ColorText(Color.YELLOW, "/"));
+                lines.get(start+3).add(new ColorText(Color.BLUE, "' ' "));
+                lines.get(start+4).add(new ColorText(Color.YELLOW, "    /"));
+                lines.get(start+4).add(new ColorText(Color.BLUE, " ' "));
+                lines.get(start+4).add(new ColorText(Color.YELLOW, "/"));
+                lines.get(start+4).add(new ColorText(Color.BLUE, " '  "));
                 break;
             case "hail":
                 lines.get(start+0).add(new ColorText(Color.YELLOW, " _`/\"\""));
@@ -223,6 +310,7 @@ public abstract class WeatherFormatter {
                 lines.get(start+2).add(new ColorText(Color.GRAY, "    ~~~~~    "));
                 lines.get(start+3).add(new ColorText(Color.GRAY, "   ~~~~      "));
                 lines.get(start+4).add(new ColorText(Color.GRAY, "    ~        "));
+                break;
             default:
                 lines.get(start+0).add(new ColorText(Color.WHITE, "    .-.      "));
                 lines.get(start+1).add(new ColorText(Color.WHITE, "     __)     "));
@@ -364,7 +452,7 @@ public abstract class WeatherFormatter {
             if (code == null){
                 code = "UN";
             }
-            lines.get(start+0).add(new ColorText(Color.WHITE, " "+code+"   "));
+            lines.get(start).add(new ColorText(Color.WHITE, " "+code+"   "));
             List<ColorText> highTemp = formatTemperature(highTemps.get(i));
             highTemp.add(0, new ColorText(Color.WHITE, " "));
             int highTempLength = getLengthOfColorTextList(highTemp);
@@ -375,7 +463,7 @@ public abstract class WeatherFormatter {
             lines.get(start+1).addAll(highTemp);
             List<ColorText> lowTemp = formatTemperature(lowTemps.get(i));
             lowTemp.add(0, new ColorText(Color.WHITE, " "));
-            int lowTempLength = getLengthOfColorTextList(highTemp);
+            int lowTempLength = getLengthOfColorTextList(lowTemp);
             if (lowTempLength < totalWidth){
                 lowTemp.add(new ColorText(Color.WHITE,
                         String.format("%1$"+(totalWidth-lowTempLength)+"s", "")));
@@ -394,6 +482,11 @@ public abstract class WeatherFormatter {
             i += text.getText().length();
         }
         return i;
+    }
+
+    public enum DisplayType{
+        CURRENT,
+        DETAIL;
     }
 
 }
