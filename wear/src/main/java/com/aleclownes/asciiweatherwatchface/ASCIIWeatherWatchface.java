@@ -97,7 +97,7 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
 
     Node mNode;
 
-    private static final int REQUEST_PERIOD = 1000*60*5;//5 minutes
+    private static final int REQUEST_PERIOD = 60*5;//5 minutes
 
     private static final String WEATHER_DATA_MESSAGE_PATH = "/weather_data";
     private static final String WEATHER_DATA_KEY = "json";
@@ -415,12 +415,15 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
                 //Find out if new json needs to be requested
                 if (weatherData != null){
                     JSONObject currently = weatherData.optJSONObject("currently");
+                    int repeats = weatherData.optInt("repeats");
                     if (currently != null) {
+                        //time is in seconds
                         long time = currently.optLong("time");
                         if (time == 0) {
                             Toast.makeText(ASCIIWeatherWatchface.this, "Time was 0", Toast.LENGTH_SHORT);
                         } else {
-                            long now = new Date().getTime();
+                            //now is in seconds
+                            long now = new Date().getTime()/1000;
                             if (now - time > REQUEST_PERIOD) {
                                 boolean success = requestWeatherData();
                                 try {
@@ -428,6 +431,7 @@ public class ASCIIWeatherWatchface extends CanvasWatchFaceService implements
                                         //If the request was able to be made
                                         //set the time to current time
                                         currently.put("time", now);
+                                        weatherData.put("repeats", repeats+1);
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();

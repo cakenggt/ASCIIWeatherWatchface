@@ -71,9 +71,10 @@ public abstract class WeatherFormatter {
         if (today == null){
             return lines;
         }
+        int repeats = json.optInt("repeats");
         switch(displayType){
             case CURRENT:
-                return createCurrent(currently, today, days);
+                return createCurrent(currently, today, days, repeats);
             case DETAIL:
                 return createDetail(hours);
         }
@@ -81,8 +82,9 @@ public abstract class WeatherFormatter {
     }
 
     private static List<List<ColorText>> createCurrent(JSONObject currently,
-                                      JSONObject today,
-                                      JSONArray days){
+                                                       JSONObject today,
+                                                       JSONArray days,
+                                                       int repeats){
         List<List<ColorText>> lines = createLines(11);
         createWeatherIcon(currently.optString("icon"), lines, 0);
         createCurrentConditions(currently.optString("summary"), currently.optDouble("temperature"),
@@ -106,6 +108,11 @@ public abstract class WeatherFormatter {
             precips.add(day.optDouble("precipProbability", 0));
         }
         formatForecast(statuses, highTemps, lowTemps, precips, lines, 6);
+        if (repeats > 0){
+            List<ColorText> repeatLine = new ArrayList<>();
+            repeatLine.add(new ColorText(Color.WHITE, "Repeats: " + repeats));
+            lines.add(repeatLine);
+        }
         return lines;
     }
 
@@ -191,7 +198,7 @@ public abstract class WeatherFormatter {
                 lines.get(start+0).add(new ColorText(Color.YELLOW, "    \\   /    "));
                 lines.get(start+1).add(new ColorText(Color.YELLOW, "     .-.     "));
                 lines.get(start+2).add(new ColorText(Color.YELLOW, "  ‒ (   ) ‒  "));
-                lines.get(start+3).add(new ColorText(Color.YELLOW, "     `-᾿     "));
+                lines.get(start+3).add(new ColorText(Color.YELLOW, "     `-'     "));
                 lines.get(start+4).add(new ColorText(Color.YELLOW, "    /   \\    "));
                 break;
             case "clear-night":
